@@ -6,7 +6,7 @@ class Game{
 
     init() {
         kontra.init();
-        let imgs = ["b", "t", "z", "z2", "f", "w", "h", "o1", "o2", "o3", "o4", "o5", "o6", "o7", "o8", "o9", "o10"];
+        let imgs = ["m", "b", "t", "z", "z2", "f", "w", "h", "o1", "o2", "o3", "o4", "o5", "o6", "o7", "o8", "o9", "o10"];
         imgs.forEach(im => {
             kontra.assets.images[im] = document.getElementById(im); 
         });
@@ -14,6 +14,8 @@ class Game{
     }
 
     main(){
+        let M = Math, RND = M.random;
+        
         let jumpSnd = jsfxr([0,,0.3433,,0.168,0.3024,,0.1901,,,,,,0.185,,,,,1,,,,,0.5]);
         let deathSnd = jsfxr([1,0.1477,0.616,0.4993,0.3202,0.5067,,-0.0011,-0.1641,,0.0282,-0.1922,0.6789,0.9542,0.5482,0.2699,-0.0007,-0.386,0.9599,-0.5059,0.4179,0.0777,0.0307,0.25]);
         let overSnd = jsfxr([2,,0.0881,,0.1905,0.3526,,-0.5607,,,,,,,,,,,1,,,,,0.4]);
@@ -23,7 +25,14 @@ class Game{
         let CW = 256, CH = 144, ctx = kontra.context;
         
         function lightingEffect() {
-            let grd = ctx.createRadialGradient(CW/2 + 20, 90, 15, 150, 70, 100);
+            var x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+            if (RND() < .04) {
+                x1 = RND() * 4;
+                y1 = RND() * 4;
+                x2 = RND() * 40;
+                y2 = RND() * 12;
+            }
+            let grd = ctx.createRadialGradient(CW/2 + 20 + (x1|0), 90+y1, 15+x1-y1, 150+x2, 70+y2, 100+x2-y2);
             grd.addColorStop(0, "#ffffff11");
             grd.addColorStop(1, "#00000099");
             ctx.fillStyle = grd;
@@ -45,7 +54,7 @@ class Game{
         
         function second() {
             elapsedTime += 1;
-            difficulty = 1 - (1/Math.exp(elapsedTime/150));
+            difficulty = 1 - (1/M.exp(elapsedTime/150));
         }
         
         function prettyTime(seconds) {
@@ -54,15 +63,15 @@ class Game{
             return (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
         }
         
-        var background = [], obstacles = [], FLOOR_POS = 102, DT = 0, generateIn = Math.random() * 2, gameOver = true;
+        var background = [], obstacles = [], FLOOR_POS = 102, DT = 0, generateIn = RND() * 2, gameOver = true;
         var elapsedTime = 0, bestTime = 0, timer, difficulty = 0, MIN_TIME = 1;
         var intro = true, introTexts = [
-//            {t: "Phone signal's gone!", p: 2},
-//            {t: "", p: 2},
-//            {t: "It's kind of an...", p: 2},
-//            {t: "offline apocalypse!", p: 2},
-//            {t: "", p: 2},
-//            {t: "Any phone cabinet?", p: 2},
+            {t: "Phone signal's gone!", p: 2},
+            {t: "", p: 2},
+            {t: "It's kind of an...", p: 2},
+            {t: "offline apocalypse!", p: 2},
+            {t: "", p: 2},
+            {t: "Any phone cabinet?", p: 2},
             {t: "...because...", p: 2},
             {t: "", p: 2}            
         ];
@@ -163,6 +172,18 @@ class Game{
             });
             background.push(floorTile);
         }
+        
+        // moon
+        let moon = kontra.sprite({
+            x: 300,
+            y: 40,
+            dx: -0.8,
+            image: kontra.assets.images.m,
+            update() {
+                this.advance();
+                if (this.x < -50) this.x = 300 + (M.random() * 300) | 0
+            }
+        });
 
         let heroSpriteSheet = kontra.spriteSheet({
             image: kontra.assets.images.h,
@@ -255,7 +276,7 @@ class Game{
             },
             render() {
                 if (gameOver) {
-                    let rnd = Math.random() < .5;
+                    let rnd = RND() < .5;
                     if (this.blink) {
                         ctx.save();
                         ctx.globalCompositeOperation = "soft-light";
@@ -321,10 +342,10 @@ class Game{
                 } else {
                     DT += dt;
                     if (DT > generateIn) {
-                        generateIn = (MIN_TIME * (1 -difficulty)) + Math.random() * 2;
+                        generateIn = (MIN_TIME * (1 -difficulty)) + RND() * 2;
                         DT = 0;
-                        let which = (Math.random() * OBSTACLES.length) | 0;
-                        if (Math.random() < .25 + (.1 * difficulty)) which = 0;
+                        let which = (RND() * OBSTACLES.length) | 0;
+                        if (RND() < .25 + (.1 * difficulty)) which = 0;
                         let o = OBSTACLES[which];
                         var cfg = {
                             x: CW,
@@ -351,6 +372,8 @@ class Game{
                         obstacles.push(kontra.sprite(cfg));
                     }
                 }
+                
+                moon.update();
                 
                 background.map(tile => {
                     tile.update();
@@ -403,6 +426,7 @@ class Game{
                     obstacles.map(obs => {
                         obs.render();
                     });
+                    moon.render();
 
                     score();
                 } else {
