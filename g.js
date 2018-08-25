@@ -6,23 +6,10 @@ class Game{
 
     init() {
         kontra.init();
-        kontra.assets.images = {
-          z: document.getElementById("z"),
-          z2: document.getElementById("z2"),
-          f: document.getElementById("f"),
-          w: document.getElementById("w"),
-          h: document.getElementById("h"),
-          o1: document.getElementById("o1"),
-          o2: document.getElementById("o2"),
-          o3: document.getElementById("o3"),
-          o4: document.getElementById("o4"),
-          o5: document.getElementById("o5"),
-          o6: document.getElementById("o6"),
-          o7: document.getElementById("o7"),
-          o8: document.getElementById("o8"),
-          o9: document.getElementById("o8"),
-          o10: document.getElementById("o10")
-        };
+        let imgs = ["b", "t", "z", "z2", "f", "w", "h", "o1", "o2", "o3", "o4", "o5", "o6", "o7", "o8", "o9", "o10"];
+        imgs.forEach(im => {
+            kontra.assets.images[im] = document.getElementById(im); 
+        });
         this.main();
     }
 
@@ -30,6 +17,7 @@ class Game{
         let jumpSnd = jsfxr([0,,0.3433,,0.168,0.3024,,0.1901,,,,,,0.185,,,,,1,,,,,0.5]);
         let deathSnd = jsfxr([1,0.1477,0.616,0.4993,0.3202,0.5067,,-0.0011,-0.1641,,0.0282,-0.1922,0.6789,0.9542,0.5482,0.2699,-0.0007,-0.386,0.9599,-0.5059,0.4179,0.0777,0.0307,0.25]);
         let overSnd = jsfxr([2,,0.0881,,0.1905,0.3526,,-0.5607,,,,,,,,,,,1,,,,,0.4]);
+        let introSnd = jsfxr([3,0.55,0.53,,0.56,0.0628,,1,1,1,,,,-0.0465,-0.0438,0.22,,,0.82,-0.0999,0.52,0.0314,-0.0015,0.58]);
         let player = new Audio();
         
         let CW = 256, CH = 144, ctx = kontra.context;
@@ -43,15 +31,16 @@ class Game{
         }
         
         function score() {
+            text(87, 57, prettyTime(elapsedTime));
+            text(187, 57, "BEST - " + prettyTime(bestTime), "#ffff00");
+        }
+        
+        function text(x, y, txt, col) {
             ctx.font = "10px monospace";
             ctx.fillStyle = "#000000";
-            ctx.fillText(prettyTime(elapsedTime), 87, 57);
-            ctx.fillStyle = "#ffffff";
-            ctx.fillText(prettyTime(elapsedTime), 86, 56);
-            ctx.fillStyle = "#000000";
-            ctx.fillText("BEST - " + prettyTime(bestTime), 187, 57);
-            ctx.fillStyle = "#ffff00";
-            ctx.fillText("BEST - " + prettyTime(bestTime), 186, 56);
+            ctx.fillText(txt, x, y);
+            ctx.fillStyle = col || "#ffffff";
+            ctx.fillText(txt, x-1, y-1);
         }
         
         function second() {
@@ -67,6 +56,16 @@ class Game{
         
         var background = [], obstacles = [], FLOOR_POS = 102, DT = 0, generateIn = Math.random() * 2, gameOver = true;
         var elapsedTime = 0, bestTime = 0, timer, difficulty = 0, MIN_TIME = 1;
+        var intro = true, introTexts = [
+            {t: "Phone signal's gone!", p: 2},
+            {t: "", p: 2},
+            {t: "It's kind of an...", p: 2},
+            {t: "offline apocalypse!", p: 2},
+            {t: "", p: 2},
+            {t: "Any phone cabinet?", p: 2},
+            {t: "...because...", p: 2},
+            {t: "", p: 2}            
+        ];
     
         let OBSTACLES = [
             {
@@ -180,6 +179,31 @@ class Game{
                 }
             }
         });
+        
+        let bubble = kontra.sprite({
+            x: 127,
+            y: 65,
+            image: kontra.assets.images.b,
+            text: "",
+            hideB: false,
+            render() {
+                if (this.text.length == 0) return;
+                
+                if (!this.hideB) this.draw();
+                
+                text(this.x + 10, this.y + 16, this.text, this.hideB ? "#fff" : "#caca00");
+            }
+        });
+        
+        let title = kontra.sprite({
+            x: 100,
+            y: 65,
+            s: false,
+            image: kontra.assets.images.t,
+            render() {
+                if (this.s) this.draw();
+            }
+        });
 
         let hero = kontra.sprite({
             x: 0,
@@ -250,6 +274,10 @@ class Game{
         kontra.keys.bind("space", jump);
 
         function jump() {
+            if (intro) {
+                return;
+            }
+            
             if (hero.isJumping || gameOver) {
                 return;
             }
@@ -271,6 +299,24 @@ class Game{
                         gameOver = false;
                         hero.verticalJump = false;
                         timer = setInterval(second, 1000);
+                    }
+                } else if (intro) {
+                    DT += dt;
+                    if (DT > generateIn) {
+                        DT = 0;
+                        let t = introTexts.shift();
+                        if (t) {
+                            generateIn = t.p;
+                            bubble.text = t.t;
+                        } else if (!title.s) {
+                            player.src = introSnd;
+                            player.play();
+                            title.s = true;
+                            setTimeout(()=>{
+                                intro = false;
+                                elapsedTime = 0;
+                            }, 4000);
+                        }
                     }
                 } else {
                     DT += dt;
@@ -350,17 +396,22 @@ class Game{
                 }
             },
             render: function() {
-                background.map(tile => {
-                    tile.render();
-                });
-                obstacles.map(obs => {
-                    obs.render();
-                });
+                if (!intro) {
+                    background.map(tile => {
+                        tile.render();
+                    });
+                    obstacles.map(obs => {
+                        obs.render();
+                    });
+
+                    score();
+                } else {
+                    bubble.render();
+                    title.render();
+                }
                 hero.render();
                 
                 lightingEffect();
-                
-                score();
             }
         }).start();
     }
