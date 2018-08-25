@@ -31,8 +31,8 @@ class Game{
         }
         
         function score() {
-            text(20, 57, prettyTime(elapsedTime));
-            text(180, 57, "BEST - " + prettyTime(bestTime), "#ffff00");
+            text(20, 30, prettyTime(elapsedTime));
+            text(180, 30, "BEST - " + prettyTime(bestTime), "#ffff00");
         }
         
         function text(x, y, txt, col) {
