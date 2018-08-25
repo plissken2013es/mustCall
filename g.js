@@ -23,7 +23,7 @@ class Game{
         let CW = 256, CH = 144, ctx = kontra.context;
         
         function lightingEffect() {
-            let grd = ctx.createRadialGradient(180, 90, 15, 150, 70, 120);
+            let grd = ctx.createRadialGradient(CW/2 + 20, 90, 15, 150, 70, 100);
             grd.addColorStop(0, "#ffffff11");
             grd.addColorStop(1, "#00000099");
             ctx.fillStyle = grd;
@@ -31,8 +31,8 @@ class Game{
         }
         
         function score() {
-            text(87, 57, prettyTime(elapsedTime));
-            text(187, 57, "BEST - " + prettyTime(bestTime), "#ffff00");
+            text(20, 57, prettyTime(elapsedTime));
+            text(180, 57, "BEST - " + prettyTime(bestTime), "#ffff00");
         }
         
         function text(x, y, txt, col) {
@@ -57,12 +57,12 @@ class Game{
         var background = [], obstacles = [], FLOOR_POS = 102, DT = 0, generateIn = Math.random() * 2, gameOver = true;
         var elapsedTime = 0, bestTime = 0, timer, difficulty = 0, MIN_TIME = 1;
         var intro = true, introTexts = [
-            {t: "Phone signal's gone!", p: 2},
-            {t: "", p: 2},
-            {t: "It's kind of an...", p: 2},
-            {t: "offline apocalypse!", p: 2},
-            {t: "", p: 2},
-            {t: "Any phone cabinet?", p: 2},
+//            {t: "Phone signal's gone!", p: 2},
+//            {t: "", p: 2},
+//            {t: "It's kind of an...", p: 2},
+//            {t: "offline apocalypse!", p: 2},
+//            {t: "", p: 2},
+//            {t: "Any phone cabinet?", p: 2},
             {t: "...because...", p: 2},
             {t: "", p: 2}            
         ];
@@ -181,7 +181,7 @@ class Game{
         });
         
         let bubble = kontra.sprite({
-            x: 127,
+            x: 115,
             y: 65,
             image: kontra.assets.images.b,
             text: "",
@@ -196,7 +196,7 @@ class Game{
         });
         
         let title = kontra.sprite({
-            x: 100,
+            x: 50,
             y: 65,
             s: false,
             image: kontra.assets.images.t,
@@ -293,8 +293,8 @@ class Game{
             update: function(dt) {
                 if (gameOver) {
                     hero.dx = 1;
-                    if (hero.x > CW/2) {
-                        hero.x = CW/2;
+                    if (hero.x > CW/2 - 20) {
+                        hero.x = CW/2 - 20;
                         hero.dx = 0;
                         gameOver = false;
                         hero.verticalJump = false;
