@@ -6,7 +6,24 @@ class Game{
 
     init() {
         kontra.init();
-        kontra.assets.load("h.png", "z.png", "z2.png", "f.png", "w.png", "o1.png", "o2.png", "o3.png", "o4.png", "o5.png", "o6.png", "o7.png", "o8.png", "o9.png", "o10.png").then(this.main);
+        kontra.assets.images = {
+          z: document.getElementById("z"),
+          z2: document.getElementById("z2"),
+          f: document.getElementById("f"),
+          w: document.getElementById("w"),
+          h: document.getElementById("h"),
+          o1: document.getElementById("o1"),
+          o2: document.getElementById("o2"),
+          o3: document.getElementById("o3"),
+          o4: document.getElementById("o4"),
+          o5: document.getElementById("o5"),
+          o6: document.getElementById("o6"),
+          o7: document.getElementById("o7"),
+          o8: document.getElementById("o8"),
+          o9: document.getElementById("o8"),
+          o10: document.getElementById("o10")
+        };
+        this.main();
 //        this.playMusic();
     }
 
@@ -181,7 +198,6 @@ class Game{
         function second() {
             elapsedTime += 1;
             difficulty = 1 - (1/Math.exp(elapsedTime/150));
-            console.log("difficulty", difficulty);
         }
         
         function prettyTime(seconds) {
@@ -325,8 +341,6 @@ class Game{
                     this.ddy = .09;
                     if (!this.verticalJump) {
                         this.dx = 0.3;
-                    } else {
-                        console.log("vertical jump");
                     }
                 }
                 
@@ -378,7 +392,6 @@ class Game{
 
         function jump() {
             if (hero.isJumping || gameOver) {
-                console.log("forbidden jump");
                 return;
             }
             player.src = jumpSnd;
@@ -448,7 +461,6 @@ class Game{
 
                     if (hero.collidesWith(obs)) {
                         if (hero.y < obs.y - obs.offset && !hero.isOver &&!hero.verticalJump && hero.dy > 0) {
-                            console.log("isOver");
                             player.src = overSnd;
                             player.play();
                             hero.isOver = obs;
@@ -457,7 +469,6 @@ class Game{
                             hero.y = obs.y - obs.offset - 1;
                         } else if (hero.y > obs.y - obs.offset) {
                             hero.isColliding = obs;
-                            console.log("isColliding");
                         }
                     }
                     
