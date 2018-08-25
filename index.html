@@ -11,15 +11,19 @@
             background: #000;
         }
         canvas {
-          background: #000;
-          transform: scale(3);
-          image-rendering: -moz-crisp-edges;         /* Firefox */
+            background: #000;
+            image-rendering: -moz-crisp-edges;         /* Firefox */
             image-rendering: -webkit-crisp-edges;      /* Webkit */
             -ms-interpolation-mode: nearest-neighbor;  /* IE (non-standard property) */
             image-rendering: pixelated;                /* Chrome */
         }
         img {
             display: none;
+        }
+        @media only screen and (min-width : 1023px) {
+            canvas {
+                transform: scale(3);
+            }
         }
     </style>
 </head>
