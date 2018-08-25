@@ -1,4 +1,4 @@
-export default class Game{
+class Game{
     constructor(){
         this.url =  window.URL || window.webkitURL;
         this.init();
@@ -6,9 +6,8 @@ export default class Game{
 
     init() {
         kontra.init();
-        kontra.assets.imagePath = "public/js";
         kontra.assets.load("h.png", "z.png", "z2.png", "f.png", "w.png", "o1.png", "o2.png", "o3.png", "o4.png", "o5.png", "o6.png", "o7.png", "o8.png", "o9.png", "o10.png").then(this.main);
-        this.playMusic();
+//        this.playMusic();
     }
 
     playMusic() {
@@ -374,7 +373,7 @@ export default class Game{
             }
         });
 
-        kontra.pointer.onUp(jump);
+        addEventListener("click", jump);
         kontra.keys.bind("space", jump);
 
         function jump() {
@@ -496,3 +495,5 @@ export default class Game{
         }).start();
     }
 }
+
+let g = new Game();
