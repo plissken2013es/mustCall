@@ -41,7 +41,7 @@ class Game{
         
         function score() {
             text(20, 30, prettyTime(elapsedTime));
-            text(180, 30, "BEST - " + prettyTime(bestTime), "#ffff00");
+            text(180, 30, `BEST - ${prettyTime(bestTime)}`, "#ffff00");
         }
         
         function text(x, y, txt, col) {
@@ -63,9 +63,162 @@ class Game{
             return (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
         }
         
+        function sortScores(scores) {
+            return scores.sort(function(obj1, obj2) {
+                return obj1.s > obj2.s;
+            });
+        }
+        
+        function generateObstacle() {
+            generateIn = (MIN_TIME * (1 -difficulty)) + RND() * 2;
+            DT = 0;
+            let which = (RND() * OBSTACLES.length) | 0;
+            if (RND() < .25 + (.1 * difficulty)) which = 0;
+            let o = OBSTACLES[which];
+            var cfg = {
+                x: CW,
+                y: FLOOR_POS + (o.posy || 2) ,
+                offset: o.off || 0,
+                dx: o.dx || -1
+            };
+            if (o.spr) {
+                cfg.image = kontra.assets.images[o.spr];
+            } else {
+                let sheet = kontra.spriteSheet({
+                    image: kontra.assets.images[o.anim],
+                    frameWidth: o.fw,
+                    frameHeight: o.fh,
+                    animations: {
+                        idle: {
+                            frames: o.frms,
+                            frameRate: o.fr
+                        }
+                    }
+                });
+                cfg.animations = sheet.animations;
+            }
+            obstacles.push(kontra.sprite(cfg));
+        }
+        
+        function displayIntroText() {
+            if (DT > generateIn) {
+                DT = 0;
+                let t = introTexts.shift();
+                if (t) {
+                    generateIn = t.p;
+                    bubble.text = t.t;
+                } else if (!title.s) {
+                    player.src = introSnd;
+                    player.play();
+                    title.s = true;
+                    setTimeout(()=>{
+                        intro = false;
+                        elapsedTime = 0;
+                    }, 4000);
+                }
+            }
+        }
+        
+        function displayScoreInfoText() {
+            if (sDT > nextScoreInfoIn) {
+                sDT = 0;
+                nextScoreInfoIn = MIN_TEXT_TIME + RND() * (5 + 5 * difficulty);
+                if (currentInfoText.length == 0) {
+                    let t = scoresQueue.shift();
+                    if (t) {
+                        currentInfoText = t;
+                    }
+                } else {
+                    currentInfoText = "";
+                }
+            }
+        }
+        
+        let BEAT_BEST_SCORE = "CONGRATS! YOU JUST BEAT YOUR BEST SCORE!",
+            TUTO_1 = "Press SPACE or Tap screen to jump.",
+            TUTO_2 = "Can you enter top 10 highscores?";
+        
+        function enqueueScoreInfo() {
+            if (bestTime > 0 && elapsedTime > bestTime) {
+                addToQueueScores(BEAT_BEST_SCORE);
+            }
+            
+            let previousScore = currentScores.find(function(s) {
+                return s.s < elapsedTime
+            });
+            if (previousScore) {
+                addToQueueScores(`You just BEAT ${previousScore.n}'s highscore of ${prettyTime(previousScore.s)}`);
+            }
+            
+            let nextScore = currentScores.find(function(s) {
+                return s.s > elapsedTime;
+            });
+            if (nextScore) {
+                addToQueueScores(`NEXT highscore to BEAT: ${nextScore.n} -> ${prettyTime(nextScore.s)}`)
+            }
+        }
+        
+        function resetGame() {
+            player.src = deathSnd;
+            player.play();
+            gameOver = true;
+            scoresQueue = [];
+            alreadyDisplayed = {};
+            if (elapsedTime > bestTime) {
+                bestTime = elapsedTime;
+            }
+            let previousScore = currentScores.findIndex(function(s) {
+                return s.s < elapsedTime
+            });
+            if (previousScore) {
+                currentScores.push({n: "You", s: elapsedTime});
+            }
+            currentScores = sortScores(currentScores);
+            let nextScore = currentScores.findIndex(function(s) {
+                return s.s > elapsedTime
+            });
+            console.log(previousScore, nextScore);
+            if (previousScore >= 0 && nextScore >= 0) {
+                let l = currentScores.length;
+                let highscoreChart = (l - previousScore) + "." + currentScores[previousScore].n + "" + prettyTime(currentScores[previousScore].s) + "  " + (l - previousScore - 1) + ".YOU: " + prettyTime(elapsedTime) + "  " + (l - previousScore - 2) + "." + currentScores[nextScore].n + "" + prettyTime(currentScores[nextScore].s);
+                addToQueueScores(highscoreChart);
+                currentInfoText = "";
+                nextScoreInfoIn = 0;
+            }
+            currentScores.forEach((score)=>{
+                console.log(score.n + " " + prettyTime(score.s) + "\n");
+            });
+            elapsedTime = 0;
+            clearInterval(timer);
+        }
+        
+        function addToQueueScores(str) {
+            if (alreadyDisplayed[str]) return;
+            scoresQueue.push(str);
+            alreadyDisplayed[str] = true;
+        }
+        
+        function jump() {
+            if (intro) {
+                return;
+            }
+            
+            if (hero.isJumping || gameOver) {
+                return;
+            }
+            player.src = jumpSnd;
+            player.play();
+            hero.isJumping = true;
+            hero.isOver = false;
+            if (hero.isColliding && !gameOver) hero.verticalJump = true;
+            hero.ddy = -2;
+        }
+        
         var background = [], obstacles = [], FLOOR_POS = 102, DT = 0, generateIn = RND() * 2, gameOver = true;
-        var elapsedTime = 0, bestTime = 0, timer, difficulty = 0, MIN_TIME = 1;
-        var intro = true, introTexts = [
+        var elapsedTime = 0, bestTime = 0, timer, difficulty = 0, MIN_TIME = 1, intro = false;
+        var sDT = 0, MIN_TEXT_TIME = 2, nextScoreInfoIn = MIN_TEXT_TIME + RND() * 5, currentInfoText = "";
+            
+        let introTexts = [
             {t: "Phone signal's gone!", p: 2},
             {t: "", p: 2},
             {t: "It's kind of an...", p: 2},
@@ -75,6 +228,25 @@ class Game{
             {t: "...because...", p: 2},
             {t: "", p: 2}            
         ];
+        
+        var DUMMY_SCORES = [
+            {s: 25, n: "Zane"},
+            {s: 105, n: "Adele"},
+            {s: 120, n: "Drew"},
+            {s: 45, n: "Monica"},
+            {s: 150, n: "Faris"},
+            {s: 65, n: "Dante"},
+            {s: 180, n: "Lukas"},
+            {s: 85, n: "Bodhi"},
+            {s: 200, n: "Lucy"},
+            {s: 95, n: "Bobby"}
+        ];
+        var currentScores = sortScores(DUMMY_SCORES), scoresQueue = [
+            TUTO_1,
+            TUTO_2,
+//            "Sample text THREE",
+//            "Sample text FOUR"
+        ], alreadyDisplayed = {};
     
         let OBSTACLES = [
             {
@@ -294,21 +466,6 @@ class Game{
         addEventListener("click", jump);
         kontra.keys.bind("space", jump);
 
-        function jump() {
-            if (intro) {
-                return;
-            }
-            
-            if (hero.isJumping || gameOver) {
-                return;
-            }
-            player.src = jumpSnd;
-            player.play();
-            hero.isJumping = true;
-            hero.isOver = false;
-            if (hero.isColliding && !gameOver) hero.verticalJump = true;
-            hero.ddy = -2;
-        }
 
         kontra.gameLoop({
             update: function(dt) {
@@ -323,53 +480,16 @@ class Game{
                     }
                 } else if (intro) {
                     DT += dt;
-                    if (DT > generateIn) {
-                        DT = 0;
-                        let t = introTexts.shift();
-                        if (t) {
-                            generateIn = t.p;
-                            bubble.text = t.t;
-                        } else if (!title.s) {
-                            player.src = introSnd;
-                            player.play();
-                            title.s = true;
-                            setTimeout(()=>{
-                                intro = false;
-                                elapsedTime = 0;
-                            }, 4000);
-                        }
-                    }
+                    displayIntroText();
                 } else {
                     DT += dt;
+                    sDT += dt;
                     if (DT > generateIn) {
-                        generateIn = (MIN_TIME * (1 -difficulty)) + RND() * 2;
-                        DT = 0;
-                        let which = (RND() * OBSTACLES.length) | 0;
-                        if (RND() < .25 + (.1 * difficulty)) which = 0;
-                        let o = OBSTACLES[which];
-                        var cfg = {
-                            x: CW,
-                            y: FLOOR_POS + (o.posy || 2) ,
-                            offset: o.off || 0,
-                            dx: o.dx || -1
-                        };
-                        if (o.spr) {
-                            cfg.image = kontra.assets.images[o.spr];
-                        } else {
-                            let sheet = kontra.spriteSheet({
-                                image: kontra.assets.images[o.anim],
-                                frameWidth: o.fw,
-                                frameHeight: o.fh,
-                                animations: {
-                                    idle: {
-                                        frames: o.frms,
-                                        frameRate: o.fr
-                                    }
-                                }
-                            });
-                            cfg.animations = sheet.animations;
-                        }
-                        obstacles.push(kontra.sprite(cfg));
+                        generateObstacle();
+                    }
+                    if (sDT > nextScoreInfoIn) {
+                        enqueueScoreInfo();
+                        displayScoreInfoText();
                     }
                 }
                 
@@ -409,13 +529,8 @@ class Game{
                 hero.update(dt);
                 if (hero.x <= -16) {
                     if (!gameOver) {
-                        player.src = deathSnd;
-                        player.play();
+                        resetGame();
                     }
-                    gameOver = true;
-                    clearInterval(timer);
-                    if (elapsedTime > bestTime) bestTime = elapsedTime;
-                    elapsedTime = 0;
                 }
             },
             render: function() {
@@ -429,6 +544,7 @@ class Game{
                     moon.render();
 
                     score();
+                    text(20, 45, currentInfoText, "#00FF00");
                 } else {
                     bubble.render();
                     title.render();
