@@ -20,7 +20,7 @@ class Game{
         let deathSnd = jsfxr([1,0.1477,0.616,0.4993,0.3202,0.5067,,-0.0011,-0.1641,,0.0282,-0.1922,0.6789,0.9542,0.5482,0.2699,-0.0007,-0.386,0.9599,-0.5059,0.4179,0.0777,0.0307,0.25]);
         let overSnd = jsfxr([2,,0.0881,,0.1905,0.3526,,-0.5607,,,,,,,,,,,1,,,,,0.4]);
         let introSnd = jsfxr([3,0.55,0.53,,0.56,0.0628,,1,1,1,,,,-0.0465,-0.0438,0.22,,,0.82,-0.0999,0.52,0.0314,-0.0015,0.58]);
-        let player = new Audio();
+        let player = new Audio(), playerName = "Player";
         
         let CW = 256, CH = 144, ctx = kontra.context;
         
@@ -63,10 +63,15 @@ class Game{
             return (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
         }
         
-        function sortScores(scores) {
-            return scores.sort(function(obj1, obj2) {
-                return obj1.s > obj2.s;
+        function sortScores() {
+            let s = currentScores.sort(function(a, b) {
+                return a.s > b.s;
             });
+            s.forEach((score, i)=>{
+                console.log((s.length - i) + ". " + score.n + " " + prettyTime(score.s) + "\n");
+            });
+            console.log("--------------------------------\n");
+            currentScores = s;
         }
         
         function generateObstacle() {
@@ -135,10 +140,11 @@ class Game{
         }
         
         let BEAT_BEST_SCORE = "CONGRATS! YOU JUST BEAT YOUR BEST SCORE!",
-            TUTO_1 = "Press SPACE or Tap screen to jump.",
-            TUTO_2 = "Can you enter top 10 highscores?";
+            TUTO_1 = "Controls: press SPACE or Tap screen to jump",
+            TUTO_2 = "Can you enter top 10 highscores?  Share it!";
         
         function enqueueScoreInfo() {
+            sortScores();
             if (bestTime > 0 && elapsedTime > bestTime) {
                 addToQueueScores(BEAT_BEST_SCORE);
             }
@@ -170,24 +176,27 @@ class Game{
             let previousScore = currentScores.findIndex(function(s) {
                 return s.s < elapsedTime
             });
-            if (previousScore) {
-                currentScores.push({n: "You", s: elapsedTime});
-            }
-            currentScores = sortScores(currentScores);
             let nextScore = currentScores.findIndex(function(s) {
+                console.warn("found next score", s);
                 return s.s > elapsedTime
             });
-            console.log(previousScore, nextScore);
-            if (previousScore >= 0 && nextScore >= 0) {
+            if (previousScore >= 0) {
+                console.warn("found previous score", previousScore, currentScores[previousScore]);
+                currentScores.push({n: playerName, s: elapsedTime});
+            }
+            sortScores();
+            console.log("prev", previousScore, "next", nextScore);
+            if (previousScore >= 0) {
                 let l = currentScores.length;
-                let highscoreChart = (l - previousScore) + "." + currentScores[previousScore].n + "" + prettyTime(currentScores[previousScore].s) + "  " + (l - previousScore - 1) + ".YOU: " + prettyTime(elapsedTime) + "  " + (l - previousScore - 2) + "." + currentScores[nextScore].n + "" + prettyTime(currentScores[nextScore].s);
+                var highscoreChart = (l - previousScore) + "." + currentScores[previousScore].n + " " + prettyTime(currentScores[previousScore].s) + "  " + (l - previousScore - 1) + ".YOU: " + prettyTime(elapsedTime);
+                if (nextScore >= 0) {
+                    highscoreChart += "  " + (l - previousScore - 2) + "." + currentScores[nextScore].n + " " + prettyTime(currentScores[nextScore].s);
+                }
                 addToQueueScores(highscoreChart);
                 currentInfoText = "";
                 nextScoreInfoIn = 0;
+                sDT = 0;
             }
-            currentScores.forEach((score)=>{
-                console.log(score.n + " " + prettyTime(score.s) + "\n");
-            });
             elapsedTime = 0;
             clearInterval(timer);
         }
@@ -241,12 +250,13 @@ class Game{
             {s: 200, n: "Lucy"},
             {s: 95, n: "Bobby"}
         ];
-        var currentScores = sortScores(DUMMY_SCORES), scoresQueue = [
+        var currentScores = DUMMY_SCORES, scoresQueue = [
             TUTO_1,
             TUTO_2,
 //            "Sample text THREE",
 //            "Sample text FOUR"
         ], alreadyDisplayed = {};
+        sortScores();
     
         let OBSTACLES = [
             {
@@ -471,6 +481,7 @@ class Game{
             update: function(dt) {
                 if (gameOver) {
                     hero.dx = 1;
+                    hero.y = FLOOR_POS;
                     if (hero.x > CW/2 - 20) {
                         hero.x = CW/2 - 20;
                         hero.dx = 0;
@@ -544,7 +555,7 @@ class Game{
                     moon.render();
 
                     score();
-                    text(20, 45, currentInfoText, "#00FF00");
+                    text(10, 45, currentInfoText, "#00FF00");
                 } else {
                     bubble.render();
                     title.render();
