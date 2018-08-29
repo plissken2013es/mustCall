@@ -64,8 +64,8 @@ class Game{
         }
         
         function sortScores() {
-            let s = currentScores.sort(function(a, b) {
-                return a.s > b.s;
+            let s = currentScores.sort((a, b)=>{
+                return a.s > b.s ? 1 : (a.s < b.s ? -1 : 0);
             });
             s.forEach((score, i)=>{
                 console.log((s.length - i) + ". " + score.n + " " + prettyTime(score.s) + "\n");
