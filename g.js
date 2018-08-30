@@ -186,13 +186,15 @@ class Game{
             }
             sortScores();
             console.log("prev", previousScore, "next", nextScore);
-            if (previousScore >= 0) {
-                let l = currentScores.length;
-                var highscoreChart = (l - previousScore) + "." + currentScores[previousScore].n + " " + prettyTime(currentScores[previousScore].s) + "  " + (l - previousScore - 1) + ".YOU: " + prettyTime(elapsedTime);
-                if (nextScore >= 0) {
-                    highscoreChart += "  " + (l - previousScore - 2) + "." + currentScores[nextScore].n + " " + prettyTime(currentScores[nextScore].s);
+            if (previousScore >= 0) {            
+                var highscoreChart = [];
+                for (var q=previousScore; q<previousScore+3; q++) {
+                    if (currentScores[q]) {
+                        highscoreChart.push((currentScores.length - q) + "." + currentScores[q].n + " " + prettyTime(currentScores[q].s) + "  ");
+                    }
                 }
-                addToQueueScores(highscoreChart);
+                
+                highscoreInfoText = highscoreChart;
                 currentInfoText = "";
                 nextScoreInfoIn = 0;
                 sDT = 0;
@@ -225,7 +227,7 @@ class Game{
         
         var background = [], obstacles = [], FLOOR_POS = 102, DT = 0, generateIn = RND() * 2, gameOver = true;
         var elapsedTime = 0, bestTime = 0, timer, difficulty = 0, MIN_TIME = 1, intro = false;
-        var sDT = 0, MIN_TEXT_TIME = 2, nextScoreInfoIn = MIN_TEXT_TIME + RND() * 5, currentInfoText = "";
+        var sDT = 0, MIN_TEXT_TIME = 2, nextScoreInfoIn = MIN_TEXT_TIME + RND() * 5, currentInfoText = "", highscoreInfoText = [];
             
         let introTexts = [
             {t: "Phone signal's gone!", p: 2},
@@ -252,9 +254,7 @@ class Game{
         ];
         var currentScores = DUMMY_SCORES, scoresQueue = [
             TUTO_1,
-            TUTO_2,
-//            "Sample text THREE",
-//            "Sample text FOUR"
+            TUTO_2
         ], alreadyDisplayed = {};
         sortScores();
     
@@ -501,6 +501,7 @@ class Game{
                     if (sDT > nextScoreInfoIn) {
                         enqueueScoreInfo();
                         displayScoreInfoText();
+                        highscoreInfoText = [];
                     }
                 }
                 
@@ -556,6 +557,9 @@ class Game{
 
                     score();
                     text(10, 45, currentInfoText, "#00FF00");
+                    highscoreInfoText.forEach((t, i)=>{
+                        text(10, 75 - 10*i, highscoreInfoText[i], i == 1 ? "#5533ff" : "#fff");
+                    });
                 } else {
                     bubble.render();
                     title.render();
