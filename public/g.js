@@ -118,10 +118,10 @@ class Game{
                     player.src = introSnd;
                     player.play();
                     title.s = true;
-                    setTimeout(()=>{
-                        intro = false;
-                        elapsedTime = 0;
-                    }, 4000);
+//                    setTimeout(()=>{
+//                        intro = false;
+//                        elapsedTime = 0;
+//                    }, 4000);
                 }
             }
         }
@@ -228,7 +228,7 @@ class Game{
         }
         
         var background = [], obstacles = [], FLOOR_POS = 102, DT = 0, generateIn = RND() * 2, gameOver = true;
-        var elapsedTime = 0, bestTime = 0, timer, difficulty = 0, MIN_TIME = 1, intro = false;
+        var elapsedTime = 0, bestTime = 0, timer, difficulty = 0, MIN_TIME = 1, intro = true;
         var sDT = 0, MIN_TEXT_TIME = 2, nextScoreInfoIn = MIN_TEXT_TIME + RND() * 5, currentInfoText = "", highscoreInfoText = [];
             
         let introTexts = [

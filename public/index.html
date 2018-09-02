@@ -18,14 +18,15 @@
             -ms-interpolation-mode: nearest-neighbor;  /* IE (non-standard property) */
             image-rendering: pixelated;                /* Chrome */
         }
-        #wr {
-        }
-        #player {
-            background: #ccc;
+        #nm {
+            background: #ffcccc33;
+            margin: -150px auto;
             width: 256px;
             height: 144px;
-            position: relative;
-            margin: 0 auto;
+            transform: scale(1)
+        }
+        #ni {
+            margin:25px auto;
         }
         img {
             display: none;
@@ -33,14 +34,21 @@
         @media only screen and (min-width : 1023px) {
             canvas {
                 margin-top: 90px;
-                transform: scale(3);
+                transform: scale(3)
+            }
+            #nm {
+                transform: scale(3)
             }
         }
     </style>
 </head>
 <body>
-    <canvas width=256 height=144></canvas>
-    <div id="player"></div>
+    <div>
+        <canvas width=256 height=144></canvas>
+        <div id="nm" width=256 height=144>
+            <input type="text" id="ni" placeholder="Your name..."><button id="nb">GO!</button>
+        </div>
+    </div>
 
    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAhCAMAAACP+FljAAAA/1BMVEVtKwAAETtRIAAQFUgMGz8ACij9/+QRIlUDHkoAAAAOJk4ADjITNGgSN2ISGE8PFEcADzoKMWARIFMOGEIADS8ABhcaVIAQUHsAPWAEFDwAETwcV38ZU3wVUnwJP2wUGlQNF0UACSb4+uQEW4wEWYoMQnACNlkHIEoDGEMGFj0HTXkIKFIOF0sHIEQAGToADDYAGzQAFjL9/ujz9uPm7eDb5te3zcmApK5jiZ9IepQAR24CQmsENF4KLlsHKFYQI1IEJkQAHTsMEjkADzTp7+DC0sqOq7NylaQLYqEZTnwFO2UHM1gEMFMEMFIPKlIPHEoPFkUEIj0AHT0ADCwACB3E3zV5AAABmElEQVQ4y43Rh3aCMBSA4dDYxAKRIAgFhVL3Ht17773e/1maeGlqa237Hz3mmo+gBzT3R0i8fmsM5ieCQQVg4QtYli3KFDCM10KhMBwO+6M+enFdY5wrMgAU3sS+1j8+Ho0MxDk3Tl331NA0rqVA+4wjvlitVisfswKqdBgMBtVKpbIzE/xxQhiGswEPs1A4AboToJlVNX88QWwc2La9fyDFNAhRVuzGUVSzbSE4AN4KMplMoHHebCDGmL9ZLvsRY7reANAKAnFxELRajQayaxdEtu7H8d4egIxK1xErbmxsb5cJKRfZg/4V1Ou7uyhaJ2l+iaXgt6ZvUToTF6+tlUokghOmf8PqVntlhZDVItNTkDiJI0ru7273UexdknFFrxbfAHCeer1ep9NxnMdDZJre1jkhm75fo/QQgGVZGGP5xl1ETbPd9jzv2qSUYgBYZVlohwoio99B0q3XBciL7/Mi+YFTcHKSHB09A0M4T6G8vKc6QSUHqqYZ4MqE9f9PWMrlxB/I5ZbEQgJYYUusACxMBIPqH0/zHfRcK9fSW0IPAAAAAElFTkSuQmCC" id="m">
    
