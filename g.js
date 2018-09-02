@@ -14,8 +14,6 @@ class Game{
     }
 
     main(){
-        let socket = io({ upgrade: false, transports: ["websocket"] });
-        
         let M = Math, RND = M.random;
         
         let jumpSnd = jsfxr([0,,0.3433,,0.168,0.3024,,0.1901,,,,,,0.185,,,,,1,,,,,0.5]);
