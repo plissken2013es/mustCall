@@ -18,6 +18,7 @@ class Game{
             nameDiv = document.getElementById("nm"),
             nameInput = document.getElementById("ni"),
             nameBtn = document.getElementById("nb");
+        bindSocket();
         
         let M = Math, RND = M.random;
         
@@ -25,12 +26,28 @@ class Game{
         let deathSnd = jsfxr([1,0.1477,0.616,0.4993,0.3202,0.5067,,-0.0011,-0.1641,,0.0282,-0.1922,0.6789,0.9542,0.5482,0.2699,-0.0007,-0.386,0.9599,-0.5059,0.4179,0.0777,0.0307,0.25]);
         let overSnd = jsfxr([2,,0.0881,,0.1905,0.3526,,-0.5607,,,,,,,,,,,1,,,,,0.4]);
         let introSnd = jsfxr([3,0.55,0.53,,0.56,0.0628,,1,1,1,,,,-0.0465,-0.0438,0.22,,,0.82,-0.0999,0.52,0.0314,-0.0015,0.58]);
-        let player = new Audio(), playerName = "Player";
+        let player = new Audio(), playerName;
         
         let CW = 256, CH = 144, ctx = kontra.context;
         
+        function bindSocket() {
+            socket.on("newUser", (name) => {
+                addToQueueScores("New player has just joined: " + name);
+            });
+            socket.on("scores", (s)=>{
+                console.log("received scores");
+                currentScores = s;
+                sortScores();
+            });
+        }
+        
         function onEnterName() {
-            socket.emit("login", nameInput.value.slice(0, 8) || "Player");
+            nm.style.display = "none";
+            playerName = nameInput.value.slice(0, 8) || "Player";
+            socket.emit("login", playerName);
+            socket.emit("scores");
+            intro = false;
+            elapsedTime = 0;
         }
         
         function lightingEffect() {
@@ -126,10 +143,6 @@ class Game{
                     player.play();
                     title.s = true;
                     nameDiv.style.display = "block";
-//                    setTimeout(()=>{
-//                        intro = false;
-//                        elapsedTime = 0;
-//                    }, 4000);
                 }
             }
         }
@@ -183,24 +196,23 @@ class Game{
             if (elapsedTime > bestTime) {
                 bestTime = elapsedTime;
             }
-            let previousScore = currentScores.findIndex(function(s) {
-                return s.s < elapsedTime
-            });
-            let nextScore = currentScores.findIndex(function(s) {
-                console.warn("found next score", s);
+            var nextScore = currentScores.findIndex(function(s) {
                 return s.s > elapsedTime
-            });
-            if (previousScore >= 0) {
-                console.warn("found previous score", previousScore, currentScores[previousScore]);
+            });        
+            var previousScore = -1;
+            if (nextScore < 0) nextScore = currentScores.length;
+            if (currentScores[nextScore-1]) {
                 currentScores.push({n: playerName, s: elapsedTime});
+                nextScore++;
+                previousScore = nextScore - 2;
             }
             sortScores();
             console.log("prev", previousScore, "next", nextScore);
-            if (previousScore >= 0) {            
+            if (previousScore >= 0) {
                 var highscoreChart = [];
                 for (var q=previousScore; q<previousScore+3; q++) {
                     if (currentScores[q]) {
-                        highscoreChart.push((currentScores.length - q) + "." + currentScores[q].n + " " + prettyTime(currentScores[q].s) + "  ");
+                        highscoreChart.push((currentScores.length-q) + "." + currentScores[q].n + " " + prettyTime(currentScores[q].s));
                     }
                 }
                 
@@ -236,7 +248,7 @@ class Game{
         }
         
         var background = [], obstacles = [], FLOOR_POS = 102, DT = 0, generateIn = RND() * 2, gameOver = true;
-        var elapsedTime = 0, bestTime = 0, timer, difficulty = 0, MIN_TIME = 1, intro = true;
+        var elapsedTime = 0, bestTime = 0, timer, difficulty = 0, MIN_TIME = 30, intro = true;
         var sDT = 0, MIN_TEXT_TIME = 2, nextScoreInfoIn = MIN_TEXT_TIME + RND() * 5, currentInfoText = "", highscoreInfoText = [];
             
         let introTexts = [
@@ -250,23 +262,10 @@ class Game{
             {t: "", p: 2}            
         ];
         
-        var DUMMY_SCORES = [
-            {s: 25, n: "Zane"},
-            {s: 105, n: "Adele"},
-            {s: 120, n: "Drew"},
-            {s: 45, n: "Monica"},
-            {s: 150, n: "Faris"},
-            {s: 65, n: "Dante"},
-            {s: 180, n: "Lukas"},
-            {s: 85, n: "Bodhi"},
-            {s: 200, n: "Lucy"},
-            {s: 95, n: "Bobby"}
-        ];
-        var currentScores = DUMMY_SCORES, scoresQueue = [
+        var currentScores = [], scoresQueue = [
             TUTO_1,
             TUTO_2
         ], alreadyDisplayed = {};
-        sortScores();
     
         let OBSTACLES = [
             {
@@ -486,8 +485,11 @@ class Game{
         addEventListener("click", jump);
         nb.onclick = onEnterName;
         kontra.keys.bind("space", jump);
-
-
+        kontra.keys.bind("enter", function() {
+            console.log("clearDB");
+            socket.emit("clear");
+        });
+        
         kontra.gameLoop({
             update: function(dt) {
                 if (gameOver) {
