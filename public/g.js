@@ -14,7 +14,10 @@ class Game{
     }
 
     main(){
-        let socket = io({ upgrade: false, transports: ["websocket"] });
+        let socket = io({ upgrade: false, transports: ["websocket"] }),
+            nameDiv = document.getElementById("nm"),
+            nameInput = document.getElementById("ni"),
+            nameBtn = document.getElementById("nb");
         
         let M = Math, RND = M.random;
         
@@ -25,6 +28,10 @@ class Game{
         let player = new Audio(), playerName = "Player";
         
         let CW = 256, CH = 144, ctx = kontra.context;
+        
+        function onEnterName() {
+            socket.emit("login", nameInput.value.slice(0, 8) || "Player");
+        }
         
         function lightingEffect() {
             var x1 = 0, y1 = 0, x2 = 0, y2 = 0;
@@ -118,6 +125,7 @@ class Game{
                     player.src = introSnd;
                     player.play();
                     title.s = true;
+                    nameDiv.style.display = "block";
 //                    setTimeout(()=>{
 //                        intro = false;
 //                        elapsedTime = 0;
@@ -232,12 +240,12 @@ class Game{
         var sDT = 0, MIN_TEXT_TIME = 2, nextScoreInfoIn = MIN_TEXT_TIME + RND() * 5, currentInfoText = "", highscoreInfoText = [];
             
         let introTexts = [
-            {t: "Phone signal's gone!", p: 2},
-            {t: "", p: 2},
-            {t: "It's kind of an...", p: 2},
-            {t: "offline apocalypse!", p: 2},
-            {t: "", p: 2},
-            {t: "Any phone cabinet?", p: 2},
+//            {t: "Phone signal's gone!", p: 2},
+//            {t: "", p: 2},
+//            {t: "It's kind of an...", p: 2},
+//            {t: "offline apocalypse!", p: 2},
+//            {t: "", p: 2},
+//            {t: "Any phone cabinet?", p: 2},
             {t: "...because...", p: 2},
             {t: "", p: 2}            
         ];
@@ -476,6 +484,7 @@ class Game{
         });
 
         addEventListener("click", jump);
+        nb.onclick = onEnterName;
         kontra.keys.bind("space", jump);
 
 

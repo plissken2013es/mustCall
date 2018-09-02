@@ -4,14 +4,15 @@
  * User sessions
  * @param {Array} users
  */
-const users = [];
+const users = {};
 
 /**
  * Remove user session
  * @param {User} user
  */
-function removeUser(user) {
-	users.splice(users.indexOf(user), 1);
+function removeUser(id) {
+	if (users[id]) delete users[id];
+    console.log(users);
 }
 
 /**
@@ -21,11 +22,15 @@ function removeUser(user) {
 module.exports = {
 
 	io: (socket) => {
-		users.push(socket);
-
 		socket.on("disconnect", () => {
 			console.log("Disconnected: " + socket.id);
-			removeUser(socket);
+			removeUser(socket.id);
+		});
+        
+        socket.on("login", (name) => {
+			console.log("Name for", socket.id, ":", name);
+			users[socket.id] = {n: name, s: 0};
+            console.log(users);
 		});
 
 		console.log("Connected: " + socket.id);
