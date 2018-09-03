@@ -35,8 +35,8 @@ class Game{
                 addToQueueScores("New online player has joined: " + name);
             });
             socket.on("beat", (high) => {
-                console.log(high.n, "made new highscore", prettyTime(high.s));
-                addToQueueScores("New " + high.n + "'s highscore -> " + prettyTime(high.s));
+                console.log(high.n, "made NEW HIGHSCORE: ", prettyTime(high.s));
+                addToQueueScores("NEW " + high.n + "'s HIGHSCORE! -> " + prettyTime(high.s));
             });
             socket.on("scores", (s)=>{
                 console.log("received scores", s);
@@ -71,7 +71,7 @@ class Game{
         
         function score() {
             text(20, 30, prettyTime(elapsedTime));
-            text(180, 30, `BEST - ${prettyTime(bestTime)}`, "#ffff00");
+            text(180, 30, "BEST - " + prettyTime(bestTime), "#ffff00");
         }
         
         function text(x, y, txt, col) {
@@ -180,14 +180,14 @@ class Game{
                 return s.s < elapsedTime
             });
             if (previousScore) {
-                addToQueueScores(`You just BEAT ${previousScore.n}'s highscore of ${prettyTime(previousScore.s)}`);
+                addToQueueScores("You just BEAT " + previousScore.n + "'s highscore of " + prettyTime(previousScore.s));
             }
             
             let nextScore = currentScores.find(function(s) {
                 return s.s > elapsedTime;
             });
             if (nextScore) {
-                addToQueueScores(`NEXT highscore to BEAT: ${nextScore.n} -> ${prettyTime(nextScore.s)}`)
+                addToQueueScores("NEXT highscore: " + nextScore.n + " -> " + prettyTime(nextScore.s))
             }
         }
         
@@ -254,7 +254,7 @@ class Game{
         }
         
         var background = [], obstacles = [], FLOOR_POS = 102, DT = 0, generateIn = RND() * 2, gameOver = true;
-        var elapsedTime = 0, bestTime = 0, timer, difficulty = 0, MIN_TIME = 30, intro = true;
+        var elapsedTime = 0, bestTime = 0, timer, difficulty = 0, MIN_TIME = 2, intro = true;
         var sDT = 0, MIN_TEXT_TIME = 2, nextScoreInfoIn = MIN_TEXT_TIME + RND() * 5, currentInfoText = "", highscoreInfoText = [];
             
         let introTexts = [
@@ -264,7 +264,7 @@ class Game{
 //            {t: "offline apocalypse!", p: 2},
 //            {t: "", p: 2},
 //            {t: "Any phone cabinet?", p: 2},
-            {t: "...because...", p: 2},
+//            {t: "...because...", p: 2},
             {t: "", p: 2}            
         ];
         
