@@ -31,11 +31,15 @@ class Game{
         let CW = 256, CH = 144, ctx = kontra.context;
         
         function bindSocket() {
-            socket.on("newUser", (name) => {
-                addToQueueScores("New player has just joined: " + name);
+            socket.on("new", (name) => {
+                addToQueueScores("New online player has joined: " + name);
+            });
+            socket.on("beat", (high) => {
+                console.log(high.n, "made new highscore", prettyTime(high.s));
+                addToQueueScores("New " + high.n + "'s highscore -> " + prettyTime(high.s));
             });
             socket.on("scores", (s)=>{
-                console.log("received scores");
+                console.log("received scores", s);
                 currentScores = s;
                 sortScores();
             });
@@ -202,7 +206,9 @@ class Game{
             var previousScore = -1;
             if (nextScore < 0) nextScore = currentScores.length;
             if (currentScores[nextScore-1]) {
-                currentScores.push({n: playerName, s: elapsedTime});
+                let h = {n: playerName, s: elapsedTime};
+                currentScores.push(h);
+                socket.emit("beat", h);
                 nextScore++;
                 previousScore = nextScore - 2;
             }
