@@ -32,11 +32,11 @@ class Game{
         
         function bindSocket() {
             socket.on("new", (name) => {
-                addToQueueScores("New online player has joined: " + name);
+                addToQueueScores("New online player has joined: " + name, true);
             });
             socket.on("beat", (high) => {
                 console.log(high.n, "made NEW HIGHSCORE: ", prettyTime(high.s));
-                addToQueueScores("NEW " + high.n + "'s HIGHSCORE! -> " + prettyTime(high.s));
+                addToQueueScores("NEW " + high.n + "'s HIGHSCORE! -> " + prettyTime(high.s), true);
             });
             socket.on("scores", (s)=>{
                 console.log("received scores", s);
@@ -97,10 +97,10 @@ class Game{
             let s = currentScores.sort((a, b)=>{
                 return a.s > b.s ? 1 : (a.s < b.s ? -1 : 0);
             });
-            s.forEach((score, i)=>{
-                console.log((s.length - i) + ". " + score.n + " " + prettyTime(score.s) + "\n");
-            });
-            console.log("--------------------------------\n");
+//            s.forEach((score, i)=>{
+//                console.log((s.length - i) + ". " + score.n + " " + prettyTime(score.s) + "\n");
+//            });
+//            console.log("--------------------------------\n");
             currentScores = s;
         }
         
@@ -158,7 +158,7 @@ class Game{
                 if (currentInfoText.length == 0) {
                     let t = scoresQueue.shift();
                     if (t) {
-                        currentInfoText = t;
+                        currentInfoText = t.s;
                     }
                 } else {
                     currentInfoText = "";
@@ -173,29 +173,41 @@ class Game{
         function enqueueScoreInfo() {
             sortScores();
             if (bestTime > 0 && elapsedTime > bestTime) {
-                addToQueueScores(BEAT_BEST_SCORE);
+                addToQueueScores(BEAT_BEST_SCORE, true);
             }
             
             let previousScore = currentScores.find(function(s) {
                 return s.s < elapsedTime
             });
             if (previousScore) {
-                addToQueueScores("You just BEAT " + previousScore.n + "'s highscore of " + prettyTime(previousScore.s));
+                addToQueueScores("You just BEAT " + previousScore.n + "'s highscore of " + prettyTime(previousScore.s), true);
             }
             
             let nextScore = currentScores.find(function(s) {
                 return s.s > elapsedTime;
             });
             if (nextScore) {
-                addToQueueScores("NEXT highscore: " + nextScore.n + " -> " + prettyTime(nextScore.s))
+                addToQueueScores("NEXT highscore: " + nextScore.n + " -> " + prettyTime(nextScore.s), false)
             }
+        }
+        
+        function clearScoresQueue() {
+            console.log("before clear queue ", scoresQueue);
+            scoresQueue.forEach((o, i)=>{
+                console.log("studying", i, o.p);
+                if (!o.p) {
+                    console.log("should delete", i, o.p);
+                    scoresQueue.splice(i, 1);
+                }
+            });
+            console.log("clear queue done!", scoresQueue);
         }
         
         function resetGame() {
             player.src = deathSnd;
             player.play();
             gameOver = true;
-            scoresQueue = [];
+            clearScoresQueue();
             alreadyDisplayed = {};
             if (elapsedTime > bestTime) {
                 bestTime = elapsedTime;
@@ -228,12 +240,11 @@ class Game{
                 sDT = 0;
             }
             elapsedTime = 0;
-            clearInterval(timer);
         }
         
-        function addToQueueScores(str) {
+        function addToQueueScores(str, persist) {
             if (alreadyDisplayed[str]) return;
-            scoresQueue.push(str);
+            scoresQueue.push({s: str, p: persist});
             alreadyDisplayed[str] = true;
         }
         
@@ -254,7 +265,7 @@ class Game{
         }
         
         var background = [], obstacles = [], FLOOR_POS = 102, DT = 0, generateIn = RND() * 2, gameOver = true;
-        var elapsedTime = 0, bestTime = 0, timer, difficulty = 0, MIN_TIME = 2, intro = true;
+        var elapsedTime = 0, bestTime = 0, timer = 0, difficulty = 0, MIN_TIME = 1, intro = true;
         var sDT = 0, MIN_TEXT_TIME = 2, nextScoreInfoIn = MIN_TEXT_TIME + RND() * 5, currentInfoText = "", highscoreInfoText = [];
             
         let introTexts = [
@@ -269,8 +280,8 @@ class Game{
         ];
         
         var currentScores = [], scoresQueue = [
-            TUTO_1,
-            TUTO_2
+            {s: TUTO_1},
+            {s: TUTO_2}
         ], alreadyDisplayed = {};
     
         let OBSTACLES = [
@@ -506,12 +517,12 @@ class Game{
                         hero.dx = 0;
                         gameOver = false;
                         hero.verticalJump = false;
-                        timer = setInterval(second, 1000);
                     }
                 } else if (intro) {
                     DT += dt;
                     displayIntroText();
                 } else {
+                    timer += dt;
                     DT += dt;
                     sDT += dt;
                     if (DT > generateIn) {
@@ -521,6 +532,10 @@ class Game{
                         enqueueScoreInfo();
                         displayScoreInfoText();
                         highscoreInfoText = [];
+                    }
+                    if (timer >= 1) {
+                        second();
+                        timer = 0;
                     }
                 }
                 

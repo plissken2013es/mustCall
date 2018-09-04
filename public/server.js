@@ -7,15 +7,10 @@
 const users = {};
 const dummy = [
     {s: 25, n: "Zane"},
-    {s: 105, n: "Adele"},
     {s: 120, n: "Drew"},
-    {s: 45, n: "Monica"},
     {s: 150, n: "Faris"},
     {s: 65, n: "Dante"},
-    {s: 180, n: "Lukas"},
-    {s: 85, n: "Bodhi"},
     {s: 200, n: "Lucy"},
-    {s: 10, n: "Noob"},
     {s: 95, n: "Bobby"}
 ];
 
@@ -68,7 +63,7 @@ module.exports = {
 		});
         
         socket.on("scores", () => {
-            console.log("storage size", storage.size);
+            console.log("storage size", storage.size());
             storage.get("scores", dummy).then(s => {
                 console.log("emitting scores", s);
                 socket.emit("scores", s);
@@ -80,6 +75,7 @@ module.exports = {
             socket.broadcast.emit("beat", h);
             storage.get("scores", dummy).then(s => {
                 s.push(h);
+                s.slice(0,149);
                 storage.set("scores", s).then((ok)=>{
                     console.log("storage updated", ok);
                     io.emit("scores", s);
