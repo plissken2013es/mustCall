@@ -498,6 +498,42 @@ class Game{
                 }
             }
         });
+        
+        // horde
+        let hordeSheet = kontra.spriteSheet({
+            image: kontra.assets.images.z,
+            frameWidth: 10,
+            frameHeight: 16,
+            animations: {
+                i0: {
+                    frames: "0..5",
+                    frameRate: 6
+                },
+                i1: {
+                    frames: "0..5",
+                    frameRate: 9
+                }
+            }
+        });
+        
+        let horde = [];
+        for (var q=0; q<7; q++) {
+            let spr = kontra.sprite({
+                x: 235+(q*3)+(6*RND()-3),
+                y: FLOOR_POS,
+                animations: hordeSheet.animations,
+                render() {
+                    let ctx = this.context;
+                    ctx.save();
+                    ctx.translate(256 + 5, 0);
+                    ctx.scale(-1, 1);
+                    this.draw();
+                    ctx.restore();
+                }
+            });
+            spr.playAnimation(RND() < .5 ? "i0" : "i1");
+            horde.push(spr);
+        }
 
         addEventListener("click", jump);
         nb.onclick = onEnterName;
@@ -578,6 +614,10 @@ class Game{
                         resetGame();
                     }
                 }
+                
+                horde.map(h=>{
+                    h.update();
+                });
             },
             render: function() {
                 if (!intro) {
@@ -599,8 +639,13 @@ class Game{
                     title.render();
                 }
                 hero.render();
+                if (!intro) {
+                    horde.map(h=>{
+                        h.render();
+                    });
+                    lightingEffect();
+                }
                 
-                lightingEffect();
             }
         }).start();
     }
