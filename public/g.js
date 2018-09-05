@@ -248,7 +248,9 @@ class Game{
             alreadyDisplayed[str] = true;
         }
         
-        function jump() {
+        function onAction() {
+            console.log(arguments);
+            
             if (intro) {
                 return;
             }
@@ -535,9 +537,9 @@ class Game{
             horde.push(spr);
         }
 
-        addEventListener("click", jump);
+        addEventListener("click", onAction);
         nb.onclick = onEnterName;
-        kontra.keys.bind("space", jump);
+        kontra.keys.bind("space", onAction);
         kontra.keys.bind("enter", function() {
             console.log("clearDB");
             socket.emit("clear");
