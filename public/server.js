@@ -20,7 +20,6 @@ const dummy = [
  */
 function removeUser(id) {
 	if (users[id]) delete users[id];
-    console.log(users);
 }
 
 function prettyTime(seconds) {
@@ -36,54 +35,40 @@ function prettyTime(seconds) {
 module.exports = {
 
 	io: (socket) => {
-        console.log("storage size", storage.size());
         if (storage.size() <= 0) {
-            storage.set("scores", dummy).then((s)=>{
-                console.log("storage set", s);
-            });
+            storage.set("scores", dummy);
         }
         
         socket.on("clear", ()=>{
-            storage.clear().then(()=>{
-                console.log("DB cleared");
-            });
+            storage.clear();
         });
         
 		socket.on("disconnect", () => {
-			console.log("Disconnected: " + socket.id);
 			removeUser(socket.id);
 		});
         
         socket.on("login", (name) => {
-			console.log("Name for", socket.id, ":", name);
 			users[socket.id] = {n: name, s: 0};
             // sending to all clients except sender
             socket.broadcast.emit("new", name);
-            console.log(users);
 		});
         
         socket.on("scores", () => {
-            console.log("storage size", storage.size());
             storage.get("scores", dummy).then(s => {
-                console.log("emitting scores", s);
                 socket.emit("scores", s);
             });
         });
         
         socket.on("beat", (h)=>{
-            console.log("new highscore!!", h);
             socket.broadcast.emit("beat", h);
             storage.get("scores", dummy).then(s => {
                 s.push(h);
                 s.slice(0,149);
                 storage.set("scores", s).then((ok)=>{
-                    console.log("storage updated", ok);
                     io.emit("scores", s);
                 });
             });
         });
-
-		console.log("Connected: " + socket.id);
 	},
 
 	stat: (req, res) => {

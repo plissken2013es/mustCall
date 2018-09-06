@@ -35,11 +35,9 @@ class Game{
                 addToQueueScores("New online player has joined: " + name, true);
             });
             socket.on("beat", (high) => {
-                console.log(high.n, "made NEW HIGHSCORE: ", prettyTime(high.s));
                 addToQueueScores("NEW " + high.n + "'s HIGHSCORE! -> " + prettyTime(high.s), true);
             });
             socket.on("scores", (s)=>{
-                console.log("received scores", s);
                 currentScores = s;
                 sortScores();
             });
@@ -97,10 +95,6 @@ class Game{
             let s = currentScores.sort((a, b)=>{
                 return a.s > b.s ? 1 : (a.s < b.s ? -1 : 0);
             });
-//            s.forEach((score, i)=>{
-//                console.log((s.length - i) + ". " + score.n + " " + prettyTime(score.s) + "\n");
-//            });
-//            console.log("--------------------------------\n");
             currentScores = s;
         }
         
@@ -192,15 +186,11 @@ class Game{
         }
         
         function clearScoresQueue() {
-            console.log("before clear queue ", scoresQueue);
             scoresQueue.forEach((o, i)=>{
-                console.log("studying", i, o.p);
                 if (!o.p) {
-                    console.log("should delete", i, o.p);
                     scoresQueue.splice(i, 1);
                 }
             });
-            console.log("clear queue done!", scoresQueue);
         }
         
         function resetGame() {
@@ -225,7 +215,6 @@ class Game{
                 previousScore = nextScore - 2;
             }
             sortScores();
-            console.log("prev", previousScore, "next", nextScore);
             if (previousScore >= 0) {
                 var highscoreChart = [];
                 for (var q=previousScore; q<previousScore+3; q++) {
@@ -271,17 +260,17 @@ class Game{
         }
         
         var background = [], obstacles = [], FLOOR_POS = 102, DT = 0, generateIn = RND() * 2, gameOver = true;
-        var elapsedTime = 0, bestTime = 0, timer = 0, difficulty = 0, MIN_TIME = 1, intro = false;
+        var elapsedTime = 0, bestTime = 0, timer = 0, difficulty = 0, MIN_TIME = 1, intro = true;
         var sDT = 0, MIN_TEXT_TIME = 2, nextScoreInfoIn = MIN_TEXT_TIME + RND() * 5, currentInfoText = "", highscoreInfoText = [];
             
         let introTexts = [
-//            {t: "Phone signal's gone!", p: 2},
-//            {t: "", p: 2},
-//            {t: "It's kind of an...", p: 2},
-//            {t: "offline apocalypse!", p: 2},
-//            {t: "", p: 2},
-//            {t: "Any phone cabinet?", p: 2},
-//            {t: "...because...", p: 2},
+            {t: "Phone signal's gone!", p: 2},
+            {t: "", p: 2},
+            {t: "It's kind of an...", p: 2},
+            {t: "offline apocalypse!", p: 2},
+            {t: "", p: 2},
+            {t: "Any phone cabinet?", p: 2},
+            {t: "...because...", p: 2},
             {t: "", p: 2}            
         ];
         
@@ -550,10 +539,6 @@ class Game{
         addEventListener("click", onAction);
         nb.onclick = onEnterName;
         kontra.keys.bind("space", onAction);
-        kontra.keys.bind("enter", function() {
-            console.log("clearDB");
-            socket.emit("clear");
-        });
         
         kontra.gameLoop({
             update: function(dt) {
