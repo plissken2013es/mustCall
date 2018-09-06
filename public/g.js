@@ -26,9 +26,15 @@ class Game{
         let deathSnd = jsfxr([1,0.1477,0.616,0.4993,0.3202,0.5067,,-0.0011,-0.1641,,0.0282,-0.1922,0.6789,0.9542,0.5482,0.2699,-0.0007,-0.386,0.9599,-0.5059,0.4179,0.0777,0.0307,0.25]);
         let overSnd = jsfxr([2,,0.0881,,0.1905,0.3526,,-0.5607,,,,,,,,,,,1,,,,,0.4]);
         let introSnd = jsfxr([3,0.55,0.53,,0.56,0.0628,,1,1,1,,,,-0.0465,-0.0438,0.22,,,0.82,-0.0999,0.52,0.0314,-0.0015,0.58]);
-        let player = new Audio(), playerName;
+        let scoreSnd = jsfxr([3,0.5671,0.5744,0.2934,0.4225,0.6162,0.0364,0.3683,0.1388,0.0135,0.17,-0.5264,0.4169,0.0375,-0.0094,0.62,0.48,-0.9964,0.9285,0.2633,,0.2613,-0.0046,0.5]);
+        let player = new Audio(), player2 = new Audio(), playerName;
         
         let CW = 256, CH = 144, ctx = kontra.context;
+        
+        function playSound(snd, p) {
+            p.src = snd;
+            p.play();
+        }
         
         function bindSocket() {
             socket.on("new", (name) => {
@@ -36,6 +42,7 @@ class Game{
             });
             socket.on("beat", (high) => {
                 addToQueueScores("NEW " + high.n + "'s HIGHSCORE! -> " + prettyTime(high.s), true);
+                playSound(scoreSnd, player2);
             });
             socket.on("scores", (s)=>{
                 currentScores = s;
@@ -50,6 +57,7 @@ class Game{
             socket.emit("scores");
             intro = false;
             elapsedTime = 0;
+            window.snd.close();
         }
         
         function lightingEffect() {
@@ -137,8 +145,7 @@ class Game{
                     generateIn = t.p;
                     bubble.text = t.t;
                 } else if (!title.s) {
-                    player.src = introSnd;
-                    player.play();
+                    playSound(introSnd, player);
                     title.s = true;
                     nameDiv.style.display = "block";
                 }
@@ -168,6 +175,7 @@ class Game{
             sortScores();
             if (bestTime > 0 && elapsedTime > bestTime) {
                 addToQueueScores(BEAT_BEST_SCORE, true);
+                playSound(scoreSnd, player2);
             }
             
             let previousScore = currentScores.find(function(s) {
@@ -175,6 +183,7 @@ class Game{
             });
             if (previousScore) {
                 addToQueueScores("You just BEAT " + previousScore.n + "'s highscore of " + prettyTime(previousScore.s), true);
+                playSound(scoreSnd, player2);
             }
             
             let nextScore = currentScores.find(function(s) {
@@ -194,8 +203,7 @@ class Game{
         }
         
         function resetGame() {
-            player.src = deathSnd;
-            player.play();
+            playSound(deathSnd, player);
             gameOver = true;
             clearScoresQueue();
             alreadyDisplayed = {};
@@ -251,8 +259,7 @@ class Game{
             if (hero.isJumping || gameOver) {
                 return;
             }
-            player.src = jumpSnd;
-            player.play();
+            playSound(jumpSnd, player);
             hero.isJumping = true;
             hero.isOver = false;
             if (hero.isColliding && !gameOver) hero.verticalJump = true;
@@ -469,8 +476,7 @@ class Game{
                     this.dx = 0;
                     if (!this.isOver) {
                         this.y = FLOOR_POS;
-                        player.src = overSnd;
-                        player.play();   
+                        playSound(overSnd, player);
                     }
                 }
                 
@@ -588,8 +594,7 @@ class Game{
 
                     if (hero.collidesWith(obs)) {
                         if (hero.y < obs.y - obs.offset && !hero.isOver &&!hero.verticalJump && hero.dy > 0) {
-                            player.src = overSnd;
-                            player.play();
+                            playSound(overSnd, player);
                             hero.isOver = obs;
                             hero.dy = 0;
                             hero.ddy = 0;
