@@ -6,7 +6,7 @@ class Game{
 
     init() {
         kontra.init();
-        let imgs = ["m", "b", "t", "z", "z2", "f", "w", "h", "o1", "o2", "o3", "o4", "o5", "o6", "o7", "o8", "o9", "o10"];
+        let imgs = ["s", "m", "b", "t", "z", "z2", "f", "w", "h", "o1", "o2", "o3", "o4", "o5", "o6", "o7", "o8", "o9", "o10"];
         imgs.forEach(im => {
             kontra.assets.images[im] = document.getElementById(im); 
         });
@@ -70,8 +70,8 @@ class Game{
         }
         
         function score() {
-            text(20, 30, prettyTime(elapsedTime));
-            text(180, 30, "BEST - " + prettyTime(bestTime), "#ffff00");
+            text(180, 30, prettyTime(elapsedTime));
+            text(20, 30, "BEST - " + prettyTime(bestTime), "#ffff00");
         }
         
         function text(x, y, txt, col) {
@@ -248,8 +248,12 @@ class Game{
             alreadyDisplayed[str] = true;
         }
         
-        function onAction() {
-            console.log(arguments);
+        function onAction(ev) {
+            let rect = kontra.canvas.getBoundingClientRect();
+            let x = ev.clientX - rect.left, y = ev.clientY - rect.top;
+            if (Math.abs(x) < 99 && Math.abs(y) < 99) {
+                window.open('http://twitter.com/intent/tweet?url=http://www.js13kgames.com/entries/i-must-call-my-grandmother&text=I survived the offline apocalypse for ' + prettyTime(bestTime) + '. Dare you!&hashtags=mustCallMyGrandmaTheGame&via=impactophaser', '_blank');
+            }
             
             if (intro) {
                 return;
@@ -267,7 +271,7 @@ class Game{
         }
         
         var background = [], obstacles = [], FLOOR_POS = 102, DT = 0, generateIn = RND() * 2, gameOver = true;
-        var elapsedTime = 0, bestTime = 0, timer = 0, difficulty = 0, MIN_TIME = 1, intro = true;
+        var elapsedTime = 0, bestTime = 0, timer = 0, difficulty = 0, MIN_TIME = 1, intro = false;
         var sDT = 0, MIN_TEXT_TIME = 2, nextScoreInfoIn = MIN_TEXT_TIME + RND() * 5, currentInfoText = "", highscoreInfoText = [];
             
         let introTexts = [
@@ -434,6 +438,12 @@ class Game{
             render() {
                 if (this.s) this.draw();
             }
+        });
+        
+        let share = kontra.sprite({
+            x: 3,
+            y: 21,
+            image: kontra.assets.images.s
         });
 
         let hero = kontra.sprite({
@@ -631,6 +641,7 @@ class Game{
                     });
                     moon.render();
 
+                    if (bestTime > 0) share.render();
                     score();
                     text(10, 45, currentInfoText, "#00FF00");
                     highscoreInfoText.forEach((t, i)=>{
