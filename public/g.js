@@ -545,6 +545,9 @@ class Game{
         addEventListener("click", onAction);
         nb.onclick = onEnterName;
         kontra.keys.bind("space", onAction);
+        kontra.keys.bind("esc", function() {
+            socket.emit("clear1");
+        });
         
         kontra.gameLoop({
             update: function(dt) {
