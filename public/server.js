@@ -69,10 +69,6 @@ module.exports = {
             socket.broadcast.emit("beat", h);
             storage.get("scores", dummy).then(s => {
                 s.push(h);
-		s = s.sort((a, b)=>{
-                return a.s > b.s ? 1 : (a.s < b.s ? -1 : 0);
-                });
-                s.slice(0,149);
                 storage.set("scores", s).then((ok)=>{
                     io.emit("scores", s);
                 });
